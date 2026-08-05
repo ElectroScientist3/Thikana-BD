@@ -19,6 +19,13 @@ function Login() {
 
     if (res.ok) {
       localStorage.setItem("token", data.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          name: data.user?.name || "John Doe",
+          email: data.user?.email || form.email,
+        })
+      );
       navigate("/dashboard");
     } else {
       alert(data.msg);

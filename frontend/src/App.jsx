@@ -3,9 +3,12 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Routine from "./pages/Routine";
-import Fitness from "./pages/Fitness";
+import Payment from "./pages/Payment";
 import DashboardHome from "./pages/DashboardHome";
 import Profile from "./pages/Profile";
+import Agent from "./pages/Agent";
+import Booking from "./pages/Booking";
+import Message from "./pages/Message";
 
 function PrivateRoute() {
   const token = localStorage.getItem("token");
@@ -35,8 +38,11 @@ function App() {
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />}>
             <Route index element={<DashboardHome />} />
-            <Route path="routine" element={<Routine />} />
-            <Route path="fitness" element={<Fitness />} />
+            <Route path="properties" element={<Routine />} />
+            <Route path="bookings" element={<Booking />} />
+            <Route path="messages" element={<Message />} />
+            <Route path="payments" element={<Payment />} />
+            <Route path="agent" element={<Agent />} />
             <Route path="profile" element={<Profile />} />
           </Route>
         </Route>

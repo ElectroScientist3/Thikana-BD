@@ -1,0 +1,41 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="roofGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#223B7A"/>
+      <stop offset="100%" stop-color="#0D1E4A"/>
+    </linearGradient>
+    <linearGradient id="pinGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF9A2F"/>
+      <stop offset="100%" stop-color="#F97316"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="56" fill="#F8FAFC"/>
+
+  <g transform="translate(26 15)">
+    <path d="M92 160L246 42L400 160V344C400 380.451 370.451 410 334 410H158C121.549 410 92 380.451 92 344V160Z" fill="url(#roofGrad)"/>
+    <path d="M160 160L246 92L332 160V344C332 360.569 318.569 374 302 374H190C173.431 374 160 360.569 160 344V160Z" fill="#F8FAFC"/>
+    <path d="M224 198H278V250H224V198Z" fill="#0D1E4A"/>
+    <rect x="190" y="218" width="112" height="88" rx="8" fill="#0D1E4A"/>
+    <rect x="214" y="242" width="20" height="20" fill="#FFFFFF"/>
+    <rect x="246" y="242" width="20" height="20" fill="#FFFFFF"/>
+    <rect x="214" y="272" width="20" height="20" fill="#FFFFFF"/>
+    <rect x="246" y="272" width="20" height="20" fill="#FFFFFF"/>
+
+    <path d="M8 146C8 90.7715 52.7715 46 108 46H144C165.539 46 183 63.4609 183 85V146H8Z" fill="url(#roofGrad)"/>
+    <path d="M85 95C85 84.5066 93.5066 76 104 76H136C146.493 76 155 84.5066 155 95V116H85V95Z" fill="#F8FAFC"/>
+
+    <g transform="translate(246 142)">
+      <circle cx="88" cy="140" r="92" fill="url(#pinGrad)"/>
+      <circle cx="88" cy="140" r="66" fill="#F8FAFC" opacity="0.12"/>
+      <path d="M88 68C120.033 68 146 93.9675 146 126C146 165.267 116.455 196.778 88 230C59.5452 196.778 30 165.267 30 126C30 93.9675 55.9675 68 88 68Z" fill="url(#pinGrad)"/>
+      <circle cx="88" cy="126" r="38" fill="#F8FAFC" opacity="0.15"/>
+      <path d="M78 90C70.2827 90 64 96.2827 64 104V113.5C64 122.613 71.3868 130 80.5 130H95.5C104.613 130 112 122.613 112 113.5V104C112 96.2827 105.717 90 98 90H78Z" fill="#0D1E4A"/>
+      <path d="M92 100H79C74.5817 100 71 103.582 71 108V114C71 118.418 74.5817 122 79 122H92C96.4183 122 100 118.418 100 114V108C100 103.582 96.4183 100 92 100Z" fill="#F8FAFC"/>
+      <path d="M95 150H84C77.3726 150 72 144.627 72 138V126C72 119.373 77.3726 114 84 114H95C101.627 114 107 119.373 107 126V138C107 144.627 101.627 150 95 150Z" fill="#0D1E4A"/>
+      <path d="M86 167L100 167" stroke="#0D1E4A" stroke-width="12" stroke-linecap="round"/>
+      <path d="M88 160L88 116" stroke="#0D1E4A" stroke-width="10" stroke-linecap="round"/>
+      <path d="M103 138C105.761 138 108 135.761 108 133C108 130.239 105.761 128 103 128C100.239 128 98 130.239 98 133C98 135.761 100.239 138 103 138Z" fill="#0D1E4A"/>
+    </g>
+  </g>
+</svg>
