@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
+const listingsRoutes = require('./routes/listings');
+const commuteRoutes = require('./routes/commute');
 const cors = require('cors');
 
 const app = express();
@@ -20,6 +22,8 @@ app.use(cors({
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/listings', listingsRoutes);
+app.use('/api/commute', commuteRoutes);
 
 // Dashboard test route (protected)
 const jwt = require('jsonwebtoken');

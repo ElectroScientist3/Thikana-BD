@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
-import Routine from "./pages/Routine";
+import MapSearch from "./pages/MapSearch";
 import Payment from "./pages/Payment";
 import DashboardHome from "./pages/DashboardHome";
 import Profile from "./pages/Profile";
@@ -38,7 +38,7 @@ function App() {
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />}>
             <Route index element={<DashboardHome />} />
-            <Route path="properties" element={<Routine />} />
+            <Route path="properties" element={<MapSearch />} />
             <Route path="bookings" element={<Booking />} />
             <Route path="messages" element={<Message />} />
             <Route path="payments" element={<Payment />} />
