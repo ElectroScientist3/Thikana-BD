@@ -1,16 +1,21 @@
+const path = require('path');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'thikana-dev-secret';
 
 const authMiddleware = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader;
   if (!token) return res.status(401).json({ msg: 'No token provided' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     req.userId = decoded.id;
     next();
   } catch (err) {
@@ -65,7 +70,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '1h' }
     );
 

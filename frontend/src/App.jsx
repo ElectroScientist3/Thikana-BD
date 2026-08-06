@@ -4,6 +4,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import MapSearch from "./pages/MapSearch";
 import Payment from "./pages/Payment";
+import PaymentResult from "./pages/PaymentResult";
 import DashboardHome from "./pages/DashboardHome";
 import Profile from "./pages/Profile";
 import Agent from "./pages/Agent";
@@ -35,6 +36,7 @@ function App() {
             <Signup />
           </PublicRoute>
         } />
+        <Route path="/payment-result" element={<PaymentResult />} />
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />}>
             <Route index element={<DashboardHome />} />

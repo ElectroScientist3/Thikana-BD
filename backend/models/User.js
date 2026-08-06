@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   homeAddress: String,
   currentLocation: String,
   familyStatus: String,
+  tokens: { type: Number, default: 0 },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

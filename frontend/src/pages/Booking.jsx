@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 const bookings = [
   {
     id: "BK-1001",
@@ -29,6 +31,14 @@ const bookings = [
 ];
 
 function Booking() {
+  const navigate = useNavigate();
+
+  const handlePay = (booking) => {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Please login to make a payment');
+    navigate(`/dashboard/payments?bookingId=${encodeURIComponent(booking.id)}`);
+  };
+
   return (
     <div className="p-6 md:p-8">
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
@@ -48,6 +58,7 @@ function Booking() {
                 <th className="px-3 py-3 font-semibold">Move-in</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
                 <th className="px-3 py-3 font-semibold">Amount</th>
+                <th className="px-3 py-3 font-semibold">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -70,6 +81,11 @@ function Booking() {
                     </span>
                   </td>
                   <td className="px-3 py-3">{item.amount}</td>
+                  <td className="px-3 py-3">
+                    <button onClick={() => handlePay(item)} className="bg-blue-600 text-white px-3 py-1 rounded">
+                      Pay Now
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
