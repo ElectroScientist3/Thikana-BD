@@ -86,6 +86,16 @@ function Dashboard() {
 
         <button
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
+            location.pathname.endsWith("/rent-calculator") ? "bg-amber-500 text-slate-950" : "text-slate-200"
+          }`}
+          onClick={() => navigate("/dashboard/rent-calculator")}
+        >
+          <span className="text-xl">🧮</span>
+          {sidebarOpen && "Rent Calculator"}
+        </button>
+
+        <button
+          className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isBookings ? "bg-indigo-500 text-white" : "text-slate-200"
           }`}
           onClick={() => navigate("/dashboard/bookings")}
