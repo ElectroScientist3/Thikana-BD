@@ -32,6 +32,8 @@ function Dashboard() {
 
   const isDashboard = location.pathname === "/dashboard";
   const isProperties = location.pathname.endsWith("/properties");
+  const isMyListings = location.pathname.endsWith("/my-listings");
+  const isViewings = location.pathname.endsWith("/viewings");
   const isBookings = location.pathname.endsWith("/bookings");
   const isMessages = location.pathname.endsWith("/messages");
   const isPayments = location.pathname.endsWith("/payments");
@@ -64,6 +66,7 @@ function Dashboard() {
           </div>
         </div>
 
+        {/* Dashboard */}
         <button
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isDashboard ? "bg-blue-600 text-white" : "text-slate-200"
@@ -74,6 +77,7 @@ function Dashboard() {
           {sidebarOpen && "Dashboard"}
         </button>
 
+        {/* Browse Properties */}
         <button
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isProperties ? "bg-amber-500 text-slate-950" : "text-slate-200"
@@ -81,9 +85,32 @@ function Dashboard() {
           onClick={() => navigate("/dashboard/properties")}
         >
           <span className="text-xl">🏘️</span>
-          {sidebarOpen && "Properties"}
+          {sidebarOpen && "Browse Properties"}
         </button>
 
+        {/* My Listings */}
+        <button
+          className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
+            isMyListings ? "bg-emerald-500 text-slate-950" : "text-slate-200"
+          }`}
+          onClick={() => navigate("/dashboard/my-listings")}
+        >
+          <span className="text-xl">📋</span>
+          {sidebarOpen && "My Listings"}
+        </button>
+
+        {/* Viewings - NEW */}
+        <button
+          className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
+            isViewings ? "bg-blue-500 text-white" : "text-slate-200"
+          }`}
+          onClick={() => navigate("/dashboard/viewings")}
+        >
+          <span className="text-xl">👁️</span>
+          {sidebarOpen && "Viewings"}
+        </button>
+
+        {/* Rent Calculator */}
         <button
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             location.pathname.endsWith("/rent-calculator") ? "bg-amber-500 text-slate-950" : "text-slate-200"
@@ -94,6 +121,7 @@ function Dashboard() {
           {sidebarOpen && "Rent Calculator"}
         </button>
 
+        {/* Bookings */}
         <button
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isBookings ? "bg-indigo-500 text-white" : "text-slate-200"
@@ -104,6 +132,7 @@ function Dashboard() {
           {sidebarOpen && "Bookings"}
         </button>
 
+        {/* Messages */}
         <button
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isMessages ? "bg-pink-500 text-white" : "text-slate-200"
@@ -114,6 +143,7 @@ function Dashboard() {
           {sidebarOpen && "Messages"}
         </button>
 
+        {/* Payments */}
         <button
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isPayments ? "bg-emerald-500 text-slate-950" : "text-slate-200"
@@ -124,6 +154,7 @@ function Dashboard() {
           {sidebarOpen && "Payments"}
         </button>
 
+        {/* AI Agent */}
         <button
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isAgent ? "bg-cyan-500 text-slate-950" : "text-slate-200"
@@ -134,6 +165,7 @@ function Dashboard() {
           {sidebarOpen && "AI Agent"}
         </button>
 
+        {/* Profile */}
         <button
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full transition-colors ${
             isProfile ? "bg-violet-500 text-white" : "text-slate-200"

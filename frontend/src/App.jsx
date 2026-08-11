@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import MapSearch from "./pages/MapSearch";
+import MyListings from "./pages/MyListings";
+import Viewings from "./pages/Viewings"; // NEW
 import RentCalculator from "./pages/RentCalculator";
 import Payment from "./pages/Payment";
 import PaymentResult from "./pages/PaymentResult";
@@ -41,6 +43,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />}>
             <Route index element={<DashboardHome />} />
             <Route path="properties" element={<MapSearch />} />
+            <Route path="my-listings" element={<MyListings />} />
+            <Route path="viewings" element={<Viewings />} /> {/* NEW */}
             <Route path="rent-calculator" element={<RentCalculator />} />
             <Route path="bookings" element={<Booking />} />
             <Route path="messages" element={<Message />} />

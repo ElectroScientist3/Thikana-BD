@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const sampleRentDetails = [
   {
@@ -31,6 +32,7 @@ const sampleRentDetails = [
 ];
 
 function DashboardHome() {
+  const navigate = useNavigate();
   const [selectedProperty, setSelectedProperty] = useState(sampleRentDetails[0]);
   const storedUser = useMemo(() => {
     try {
@@ -45,12 +47,76 @@ function DashboardHome() {
 
   const quickActions = [
     { title: "Add Property", subtitle: "Launch new listings" },
-    { title: "Add Rental Unit", subtitle: "Create unit inventory" },
+    { title: "My Listings", subtitle: "Manage your properties" },
+    { title: "Viewings", subtitle: "Manage viewing requests" },
     { title: "Create Booking", subtitle: "Reserve a visitor slot" },
-    { title: "Payment Record", subtitle: "Track incoming rent" },
-    { title: "View Rent Ledger", subtitle: "Inspect monthly balance" },
+    { title: "Record Payment", subtitle: "Track incoming rent" },
     { title: "Buy Token", subtitle: "Unlock AI discovery" },
   ];
+
+  // Action configuration with paths and colors
+  const actionConfigs = [
+    { 
+      title: "Add Property", 
+      icon: "🏠", 
+      path: "/dashboard/properties",
+      tint: "bg-green-50 text-green-700 border-green-200",
+      hover: "hover:bg-green-100"
+    },
+    { 
+      title: "My Listings", 
+      icon: "📋", 
+      path: "/dashboard/my-listings",
+      tint: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      hover: "hover:bg-emerald-100"
+    },
+    { 
+      title: "Viewings", 
+      icon: "👁️", 
+      path: "/dashboard/viewings",
+      tint: "bg-blue-50 text-blue-700 border-blue-200",
+      hover: "hover:bg-blue-100"
+    },
+    { 
+      title: "Create Booking", 
+      icon: "🗓️", 
+      path: "/dashboard/bookings",
+      tint: "bg-violet-50 text-violet-700 border-violet-200",
+      hover: "hover:bg-violet-100"
+    },
+    { 
+      title: "Record Payment", 
+      icon: "💳", 
+      path: "/dashboard/payments",
+      tint: "bg-amber-50 text-amber-700 border-amber-200",
+      hover: "hover:bg-amber-100"
+    },
+    { 
+      title: "Buy Token", 
+      icon: "🪙", 
+      path: "/dashboard/payments?plan=basic",
+      tint: "bg-rose-50 text-rose-700 border-rose-200",
+      hover: "hover:bg-rose-100"
+    },
+  ];
+
+  const handleActionClick = (action) => {
+    if (action.title === "Buy Token") {
+      navigate("/dashboard/payments?plan=basic");
+    } else if (action.title === "Add Property") {
+      navigate("/dashboard/properties");
+    } else if (action.title === "My Listings") {
+      navigate("/dashboard/my-listings");
+    } else if (action.title === "Viewings") {
+      navigate("/dashboard/viewings");
+    } else if (action.title === "Create Booking") {
+      navigate("/dashboard/bookings");
+    } else if (action.title === "Record Payment") {
+      navigate("/dashboard/payments");
+    } else {
+      navigate(action.path);
+    }
+  };
 
   return (
     <div className="p-6 md:p-8 space-y-6">
@@ -96,7 +162,12 @@ function DashboardHome() {
               <h2 className="text-2xl font-bold text-slate-900">Rent Details</h2>
               <p className="text-sm text-slate-500">Interactive property and ledger overview</p>
             </div>
-            <button className="rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-semibold">View Ledger</button>
+            <button 
+              onClick={() => navigate("/dashboard/payments")}
+              className="rounded-full bg-slate-900 text-white px-4 py-2 text-sm font-semibold hover:bg-slate-800 transition"
+            >
+              View Ledger
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
@@ -156,28 +227,19 @@ function DashboardHome() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { title: "Add Property", icon: "🏠", tint: "bg-green-50 text-green-700 border-green-200" },
-              { title: "Add Rental Unit", icon: "🏢", tint: "bg-blue-50 text-blue-700 border-blue-200" },
-              { title: "Create Booking", icon: "🗓️", tint: "bg-violet-50 text-violet-700 border-violet-200" },
-              { title: "Record Payment", icon: "💳", tint: "bg-amber-50 text-amber-700 border-amber-200" },
-              { title: "View Rent Ledger", icon: "📄", tint: "bg-sky-50 text-sky-700 border-sky-200" },
-              { title: "Buy Token", icon: "🪙", tint: "bg-rose-50 text-rose-700 border-rose-200" },
-            ].map((action) => (
+            {actionConfigs.map((action) => (
               <button
                 key={action.title}
-                onClick={() => {
-                  if (action.title === "Buy Token") {
-                    window.location.href = "/dashboard/payments?plan=basic";
-                  }
-                }}
-                className={`rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md ${action.tint}`}
+                onClick={() => handleActionClick(action)}
+                className={`rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md ${action.tint} ${action.hover}`}
               >
                 <div className="w-12 h-12 rounded-xl bg-white/80 flex items-center justify-center text-2xl shadow-sm mb-3">
                   {action.icon}
                 </div>
                 <div className="font-semibold text-base">{action.title}</div>
-                <div className="text-xs text-slate-500 mt-1">{quickActions.find((item) => item.title === action.title)?.subtitle}</div>
+                <div className="text-xs text-slate-500 mt-1">
+                  {quickActions.find((item) => item.title === action.title)?.subtitle}
+                </div>
               </button>
             ))}
           </div>

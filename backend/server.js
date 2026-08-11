@@ -4,8 +4,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const listingsRoutes = require('./routes/listings');
+const listingsOwnerRoutes = require('./routes/listings-owner');
 const commuteRoutes = require('./routes/commute');
 const paymentsRoutes = require('./routes/payments');
+const notificationsRoutes = require('./routes/notifications');
+const viewingsRoutes = require('./routes/viewings'); // NEW
 const cors = require('cors');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'thikana-dev-secret';
@@ -20,8 +23,8 @@ mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-  .then(() => console.log('MongoDB connected!'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .then(() => console.log('✅ MongoDB connected!'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // allow requests from your React frontend
 app.use(cors({
@@ -32,8 +35,11 @@ app.use(cors({
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingsRoutes);
+app.use('/api/listings/owner', listingsOwnerRoutes);
 app.use('/api/commute', commuteRoutes);
 app.use('/api/payments', paymentsRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/viewings', viewingsRoutes); // NEW - Viewing appointments
 
 // Dashboard test route (protected)
 const jwt = require('jsonwebtoken');
@@ -51,4 +57,4 @@ app.get('/api/dashboard', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
