@@ -1,0 +1,25 @@
+<svg width="520" height="140" viewBox="0 0 520 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FDBA74"/>
+      <stop offset="100%" stop-color="#F97316"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(10 10)">
+    <circle cx="60" cy="60" r="48" stroke="url(#ringGrad)" stroke-width="13" fill="#F8FAFC"/>
+    <circle cx="60" cy="60" r="28" stroke="#1E3A8A" stroke-width="4" fill="#F8FAFC" opacity="0.95"/>
+    <path d="M60 33C48.9543 33 40 41.9543 40 53V56H48V53C48 46.3726 53.3726 41 60 41C66.6274 41 72 46.3726 72 53V56H80V53C80 41.9543 71.0457 33 60 33Z" fill="url(#accentGrad)"/>
+    <path d="M51 56H69C71.2091 56 73 57.7909 73 60V74C73 76.2091 71.2091 78 69 78H51C48.7909 78 47 76.2091 47 74V60C47 57.7909 48.7909 56 51 56Z" fill="url(#accentGrad)"/>
+    <path d="M60 62C57.7909 62 56 63.7909 56 66V70C56 72.2091 57.7909 74 60 74C62.2091 74 64 72.2091 64 70V66C64 63.7909 62.2091 62 60 62Z" fill="#F8FAFC"/>
+  </g>
+
+  <g transform="translate(132 16)">
+    <text x="0" y="54" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" fill="#0F172A">Thikana</text>
+    <text x="0" y="104" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" fill="#F97316">BD</text>
+  </g>
+</svg>
