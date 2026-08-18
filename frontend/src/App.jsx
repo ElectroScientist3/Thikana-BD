@@ -1,8 +1,13 @@
+// src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import MapSearch from "./pages/MapSearch";
+import MyListings from "./pages/MyListings";
+import Viewings from "./pages/Viewings";
+import Recommendations from "./pages/Recommendations";
+import RentCalculator from "./pages/RentCalculator";
+import RentLedger from "./pages/RentLedger";
 import Payment from "./pages/Payment";
 import PaymentResult from "./pages/PaymentResult";
 import DashboardHome from "./pages/DashboardHome";
@@ -28,12 +33,12 @@ function App() {
         <Route path="/" element={<Navigate to="/signup" />} />
         <Route path="/login" element={
           <PublicRoute>
-            <Login />
+            <Auth />
           </PublicRoute>
         } />
         <Route path="/signup" element={
           <PublicRoute>
-            <Signup />
+            <Auth />
           </PublicRoute>
         } />
         <Route path="/payment-result" element={<PaymentResult />} />
@@ -41,6 +46,11 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />}>
             <Route index element={<DashboardHome />} />
             <Route path="properties" element={<MapSearch />} />
+            <Route path="my-listings" element={<MyListings />} />
+            <Route path="viewings" element={<Viewings />} />
+            <Route path="recommendations" element={<Recommendations />} />
+            <Route path="rent-calculator" element={<RentCalculator />} />
+            <Route path="rent-ledger" element={<RentLedger />} />
             <Route path="bookings" element={<Booking />} />
             <Route path="messages" element={<Message />} />
             <Route path="payments" element={<Payment />} />

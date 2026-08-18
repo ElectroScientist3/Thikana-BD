@@ -1,3 +1,4 @@
+// src/pages/Dashboard.jsx
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
 
@@ -32,6 +33,8 @@ function Dashboard() {
 
   const isDashboard = location.pathname === "/dashboard";
   const isProperties = location.pathname.endsWith("/properties");
+  const isMyListings = location.pathname.endsWith("/my-listings");
+  const isViewings = location.pathname.endsWith("/viewings");
   const isBookings = location.pathname.endsWith("/bookings");
   const isMessages = location.pathname.endsWith("/messages");
   const isPayments = location.pathname.endsWith("/payments");
@@ -81,7 +84,37 @@ function Dashboard() {
           onClick={() => navigate("/dashboard/properties")}
         >
           <span className="text-xl">🏘️</span>
-          {sidebarOpen && "Properties"}
+          {sidebarOpen && "Browse Properties"}
+        </button>
+
+        <button
+          className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
+            isMyListings ? "bg-emerald-500 text-slate-950" : "text-slate-200"
+          }`}
+          onClick={() => navigate("/dashboard/my-listings")}
+        >
+          <span className="text-xl">📋</span>
+          {sidebarOpen && "My Listings"}
+        </button>
+
+        <button
+          className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
+            isViewings ? "bg-blue-500 text-white" : "text-slate-200"
+          }`}
+          onClick={() => navigate("/dashboard/viewings")}
+        >
+          <span className="text-xl">👁️</span>
+          {sidebarOpen && "Viewings"}
+        </button>
+
+        <button
+          className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
+            location.pathname.endsWith("/rent-calculator") ? "bg-amber-500 text-slate-950" : "text-slate-200"
+          }`}
+          onClick={() => navigate("/dashboard/rent-calculator")}
+        >
+          <span className="text-xl">🧮</span>
+          {sidebarOpen && "Rent Calculator"}
         </button>
 
         <button
@@ -147,13 +180,14 @@ function Dashboard() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="flex justify-between items-center px-6 py-4 bg-white shadow-sm border-b border-slate-200">
+        <header className="flex justify-between items-center px-6 py-4 bg-white shadow-sm border-b border-slate-200 relative z-50">
           <div>
             <div className="text-xs uppercase tracking-[0.32em] text-slate-500">Property Booking Platform</div>
             <div className="text-lg font-semibold text-slate-900">Welcome to your rental workspace</div>
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Notifications */}
             <div className="relative" ref={notificationRef}>
               <button
                 onClick={() => setNotificationsOpen((open) => !open)}
@@ -167,7 +201,7 @@ function Dashboard() {
               </button>
 
               {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl z-10 border border-slate-200 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl z-[60] border border-slate-200 overflow-hidden">
                   <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 font-semibold text-slate-900">Notifications</div>
                   <div className="p-3 space-y-2">
                     <div className="rounded-xl bg-blue-50 px-3 py-2 text-sm text-slate-700">
@@ -187,6 +221,7 @@ function Dashboard() {
               )}
             </div>
 
+            {/* Profile Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((open) => !open)}
@@ -197,16 +232,19 @@ function Dashboard() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl z-10 border border-slate-200 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl z-[70] border border-slate-200 overflow-hidden">
                   <button
-                    onClick={() => navigate("/dashboard/profile")}
-                    className="block w-full text-left px-4 py-3 text-slate-700 hover:bg-slate-100"
+                    onClick={() => {
+                      navigate("/dashboard/profile");
+                      setDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 text-slate-700 hover:bg-slate-100 transition"
                   >
                     Profile
                   </button>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-3 text-red-600 hover:bg-red-50"
+                    className="block w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition"
                   >
                     Logout
                   </button>

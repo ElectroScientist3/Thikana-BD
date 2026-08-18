@@ -1,3 +1,4 @@
+// src/data/bookings.js
 export const bookings = [
   {
     id: "BK-1001",
