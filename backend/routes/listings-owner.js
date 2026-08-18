@@ -3,6 +3,7 @@ const router = express.Router();
 const Listing = require('../models/Listing');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { requireOwner } = require('../middleware/roleAuth');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'thikana-dev-secret';
 
@@ -20,6 +21,8 @@ const authMiddleware = (req, res, next) => {
     res.status(401).json({ msg: 'Invalid token' });
   }
 };
+
+router.use(authMiddleware, requireOwner());
 
 // Get owner's dashboard statistics
 router.get('/dashboard/stats', authMiddleware, async (req, res) => {

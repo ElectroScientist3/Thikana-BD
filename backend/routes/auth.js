@@ -26,10 +26,27 @@ const authMiddleware = (req, res, next) => {
 // Signup
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password, phone, homeAddress, currentLocation, familyStatus } = req.body;
+    const {
+      name,
+      email,
+      password,
+      phone,
+      homeAddress,
+      currentLocation,
+      familyStatus,
+      role,
+      verificationStatus,
+      verificationDocuments,
+      verificationNotes,
+      businessName,
+      preferredContactMethod,
+    } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ msg: 'Name, email, and password are required' });
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ msg: 'Name, email, password, and role are required' });
+    }
+    if (!['tenant', 'owner'].includes(role)) {
+      return res.status(400).json({ msg: 'Signup role must be tenant or owner' });
     }
     if (password.length < 6) {
       return res.status(400).json({ msg: 'Password must be at least 6 characters' });
@@ -48,6 +65,12 @@ router.post('/signup', async (req, res) => {
       homeAddress,
       currentLocation,
       familyStatus,
+      role,
+      verificationStatus,
+      verificationDocuments,
+      verificationNotes,
+      businessName,
+      preferredContactMethod,
     });
     await user.save();
 
@@ -69,12 +92,15 @@ router.post('/login', async (req, res) => {
     if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { id: user._id },
+      { id: user._id, role: user.role },
       JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.json({
+      token,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

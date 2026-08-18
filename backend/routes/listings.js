@@ -6,6 +6,8 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 const { computeMatchScore, recommendListings } = require('../utils/recommend');
+const { requireOwner } = require('../middleware/roleAuth');
+const { runDuplicateCheck } = require('../services/duplicateDetectionService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'thikana-dev-secret';
 
@@ -137,7 +139,7 @@ router.post('/recommend', async (req, res) => {
 });
 
 // GET listings for owner (dashboard)
-router.get('/my-listings', authMiddleware, async (req, res) => {
+router.get('/my-listings', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const listings = await Listing.find({ owner_id: req.userId })
       .sort({ createdAt: -1 });
@@ -190,13 +192,13 @@ router.get('/:id', async (req, res) => {
 });
 
 // CREATE a new listing (owner only)
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const {
       title, description, city, area, monthly_rent_bdt, advance_bdt,
       property_type, rooms, available_from, coords, images, utilities,
       status, hold_expiry_date, reservation_expiry_date,
-      owner_name, owner_email
+      owner_name, owner_email, owner_phone, address
     } = req.body;
     
     // Validate required fields
@@ -229,6 +231,8 @@ router.post('/', authMiddleware, async (req, res) => {
       owner_id: req.userId,
       owner_name: owner_name,
       owner_email: owner_email,
+      owner_phone,
+      address,
       utilities: utilities || {},
       status: status || 'available_now',
       hold_expiry_date: status === 'on_hold' ? hold_expiry_date : undefined,
@@ -242,6 +246,7 @@ router.post('/', authMiddleware, async (req, res) => {
     });
     
     await newListing.save();
+    void runDuplicateCheck(newListing._id).catch((error) => console.error('[DuplicateDetection] listing check failed:', error.message));
     res.status(201).json({ msg: 'Listing created successfully', listing: newListing });
   } catch (err) {
     console.error(err);
@@ -250,7 +255,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // UPDATE a listing (owner only)
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
     if (!listing) {
@@ -265,7 +270,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
       title, description, city, area, monthly_rent_bdt, advance_bdt,
       property_type, rooms, available_from, coords, images, utilities,
       status, hold_expiry_date, reservation_expiry_date,
-      owner_name, owner_email
+      owner_name, owner_email, owner_phone, address
     } = req.body;
     
     // Update basic fields
@@ -283,6 +288,8 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (utilities) listing.utilities = { ...listing.utilities, ...utilities };
     if (owner_name) listing.owner_name = owner_name;
     if (owner_email) listing.owner_email = owner_email;
+    if (owner_phone !== undefined) listing.owner_phone = owner_phone;
+    if (address !== undefined) listing.address = address;
     
     // Handle status update with history
     if (status && status !== listing.status) {
@@ -348,7 +355,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 // UPDATE listing status only (owner)
-router.patch('/:id/status', authMiddleware, async (req, res) => {
+router.patch('/:id/status', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { 
       status, 
@@ -435,7 +442,7 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
 });
 
 // DELETE a listing (owner only)
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
     if (!listing) {

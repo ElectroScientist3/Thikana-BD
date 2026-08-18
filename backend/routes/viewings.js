@@ -7,6 +7,8 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const RentalApplication = require('../models/RentalApplication');
 const { authMiddleware } = require('../middleware/auth');
+const { requireRole, requireTenant, requireOwner } = require('../middleware/roleAuth');
+const { sendViewingRequestNotification, sendViewingResponseNotification } = require('../services/notificationService');
 const googleCalendarService = require('../services/googleCalendar');
 
 // ============================================
@@ -14,7 +16,7 @@ const googleCalendarService = require('../services/googleCalendar');
 // ============================================
 
 // Request a viewing (tenant)
-router.post('/request', authMiddleware, async (req, res) => {
+router.post('/request', authMiddleware, requireTenant(), async (req, res) => {
   try {
     const { listing_id, requested_date, requested_time, duration_minutes, notes, tenant_phone } = req.body;
     const tenant_id = req.userId;
@@ -103,6 +105,13 @@ router.post('/request', authMiddleware, async (req, res) => {
         }
       }
     });
+    void sendViewingRequestNotification(
+      listing.owner_id,
+      tenant.name,
+      listing.title,
+      `${requested_date} ${requested_time}`,
+      appointment._id
+    );
 
     res.status(201).json({
       msg: 'Viewing request sent successfully. The owner has been notified.',
@@ -115,7 +124,7 @@ router.post('/request', authMiddleware, async (req, res) => {
 });
 
 // Get tenant's appointments
-router.get('/tenant', authMiddleware, async (req, res) => {
+router.get('/tenant', authMiddleware, requireTenant(), async (req, res) => {
   try {
     const { status, limit = 50, page = 1 } = req.query;
     const query = { tenant_id: req.userId };
@@ -180,7 +189,7 @@ router.get('/tenant', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get owner's appointments
-router.get('/owner', authMiddleware, async (req, res) => {
+router.get('/owner', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { status, limit = 50, page = 1 } = req.query;
     const query = { owner_id: req.userId };
@@ -252,7 +261,7 @@ router.get('/owner', authMiddleware, async (req, res) => {
 });
 
 // Get appointment statistics for owner
-router.get('/owner/stats', authMiddleware, async (req, res) => {
+router.get('/owner/stats', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const stats = await ViewingAppointment.aggregate([
       { $match: { owner_id: req.userId } },
@@ -295,7 +304,7 @@ router.get('/owner/stats', authMiddleware, async (req, res) => {
 });
 
 // Get completed viewings for owner (for sending applications)
-router.get('/owner/completed', authMiddleware, async (req, res) => {
+router.get('/owner/completed', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { listingId } = req.query;
     const query = { 
@@ -345,7 +354,7 @@ router.get('/owner/completed', authMiddleware, async (req, res) => {
 });
 
 // Get completed viewings for a specific listing
-router.get('/owner/completed/:listingId', authMiddleware, async (req, res) => {
+router.get('/owner/completed/:listingId', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { listingId } = req.params;
     
@@ -401,7 +410,7 @@ router.get('/owner/completed/:listingId', authMiddleware, async (req, res) => {
 });
 
 // Approve viewing (owner)
-router.patch('/:id/approve', authMiddleware, async (req, res) => {
+router.patch('/:id/approve', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { notes } = req.body;
     const appointment = await ViewingAppointment.findById(req.params.id);
@@ -467,6 +476,7 @@ router.patch('/:id/approve', authMiddleware, async (req, res) => {
         approved_at: new Date()
       }
     });
+    void sendViewingResponseNotification(appointment.tenant_id, 'approved', listing.title, appointment._id);
 
     res.json({
       msg: 'Appointment approved successfully',
@@ -480,7 +490,7 @@ router.patch('/:id/approve', authMiddleware, async (req, res) => {
 });
 
 // Reject viewing (owner)
-router.patch('/:id/reject', authMiddleware, async (req, res) => {
+router.patch('/:id/reject', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { notes } = req.body;
     const appointment = await ViewingAppointment.findById(req.params.id);
@@ -519,6 +529,7 @@ router.patch('/:id/reject', authMiddleware, async (req, res) => {
         rejected_at: new Date()
       }
     });
+    void sendViewingResponseNotification(appointment.tenant_id, 'rejected', listing.title, appointment._id);
 
     res.json({
       msg: 'Appointment rejected',
@@ -531,7 +542,7 @@ router.patch('/:id/reject', authMiddleware, async (req, res) => {
 });
 
 // Suggest new time (owner)
-router.patch('/:id/reschedule', authMiddleware, async (req, res) => {
+router.patch('/:id/reschedule', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { suggested_date, suggested_time, notes } = req.body;
     const appointment = await ViewingAppointment.findById(req.params.id);
@@ -578,6 +589,7 @@ router.patch('/:id/reschedule', authMiddleware, async (req, res) => {
         rescheduled_at: new Date()
       }
     });
+    void sendViewingResponseNotification(appointment.tenant_id, 'rescheduled', listing.title, appointment._id);
 
     res.json({
       msg: 'Reschedule suggested successfully',
@@ -594,7 +606,7 @@ router.patch('/:id/reschedule', authMiddleware, async (req, res) => {
 // ============================================
 
 // Get appointment by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authMiddleware, requireRole('tenant', 'owner'), async (req, res) => {
   try {
     const appointment = await ViewingAppointment.findById(req.params.id)
       .populate('listing_id', 'title area city monthly_rent_bdt images description owner_name owner_email')
@@ -619,7 +631,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // Accept reschedule (tenant)
-router.patch('/:id/accept-reschedule', authMiddleware, async (req, res) => {
+router.patch('/:id/accept-reschedule', authMiddleware, requireTenant(), async (req, res) => {
   try {
     const appointment = await ViewingAppointment.findById(req.params.id);
 
@@ -683,7 +695,7 @@ router.patch('/:id/accept-reschedule', authMiddleware, async (req, res) => {
 });
 
 // Cancel appointment (tenant or owner)
-router.patch('/:id/cancel', authMiddleware, async (req, res) => {
+router.patch('/:id/cancel', authMiddleware, requireRole('tenant', 'owner'), async (req, res) => {
   try {
     const { notes } = req.body;
     const appointment = await ViewingAppointment.findById(req.params.id);
@@ -746,7 +758,7 @@ router.patch('/:id/cancel', authMiddleware, async (req, res) => {
 });
 
 // Mark appointment as completed (owner)
-router.patch('/:id/complete', authMiddleware, async (req, res) => {
+router.patch('/:id/complete', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { notes } = req.body;
     const appointment = await ViewingAppointment.findById(req.params.id);

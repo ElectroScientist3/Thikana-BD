@@ -8,13 +8,15 @@ const ViewingAppointment = require('../models/ViewingAppointment');
 const Notification = require('../models/Notification');
 const ApplicationComparison = require('../models/ApplicationComparison');
 const { authMiddleware } = require('../middleware/auth');
+const { requireRole, requireTenant, requireOwner } = require('../middleware/roleAuth');
+const { sendApplicationStatusNotification } = require('../services/notificationService');
 
 // ============================================
 // TENANT ROUTES
 // ============================================
 
 // Submit a rental application (tenant)
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, requireTenant(), async (req, res) => {
   try {
     const tenant_id = req.userId;
     const {
@@ -141,7 +143,6 @@ router.post('/', authMiddleware, async (req, res) => {
         owner_id: listing.owner_id
       }
     });
-
     res.status(201).json({
       msg: 'Application submitted successfully',
       application
@@ -153,7 +154,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Get tenant's applications
-router.get('/tenant', authMiddleware, async (req, res) => {
+router.get('/tenant', authMiddleware, requireTenant(), async (req, res) => {
   try {
     const { status, limit = 50, page = 1 } = req.query;
     const query = { tenant_id: req.userId };
@@ -187,7 +188,7 @@ router.get('/tenant', authMiddleware, async (req, res) => {
 });
 
 // Get tenant's application status for a listing
-router.get('/tenant/status/:listingId', authMiddleware, async (req, res) => {
+router.get('/tenant/status/:listingId', authMiddleware, requireTenant(), async (req, res) => {
   try {
     const { listingId } = req.params;
     
@@ -230,7 +231,7 @@ router.get('/tenant/status/:listingId', authMiddleware, async (req, res) => {
 });
 
 // Get tenant's application by viewing appointment ID
-router.get('/tenant/by-viewing/:viewingId', authMiddleware, async (req, res) => {
+router.get('/tenant/by-viewing/:viewingId', authMiddleware, requireTenant(), async (req, res) => {
   try {
     const { viewingId } = req.params;
     
@@ -300,7 +301,7 @@ router.get('/tenant/by-viewing/:viewingId', authMiddleware, async (req, res) => 
 });
 
 // Update/withdraw application (tenant)
-router.patch('/:id/withdraw', authMiddleware, async (req, res) => {
+router.patch('/:id/withdraw', authMiddleware, requireTenant(), async (req, res) => {
   try {
     const { notes } = req.body;
     const application = await RentalApplication.findById(req.params.id);
@@ -351,7 +352,7 @@ router.patch('/:id/withdraw', authMiddleware, async (req, res) => {
 // ============================================
 
 // Send application to tenant (Owner sends application after viewing)
-router.post('/send', authMiddleware, async (req, res) => {
+router.post('/send', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const owner_id = req.userId;
     const {
@@ -457,6 +458,7 @@ router.post('/send', authMiddleware, async (req, res) => {
         requires_completion: true
       }
     });
+    void sendApplicationStatusNotification(tenant_id, 'received', listing.title, application._id);
 
     res.status(201).json({
       msg: 'Application sent to tenant successfully',
@@ -469,7 +471,7 @@ router.post('/send', authMiddleware, async (req, res) => {
 });
 
 // Get applications for owner
-router.get('/owner', authMiddleware, async (req, res) => {
+router.get('/owner', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { status, listingId, limit = 50, page = 1 } = req.query;
     const query = { owner_id: req.userId };
@@ -508,7 +510,7 @@ router.get('/owner', authMiddleware, async (req, res) => {
 });
 
 // Get application statistics for owner
-router.get('/owner/stats', authMiddleware, async (req, res) => {
+router.get('/owner/stats', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { listingId } = req.query;
     const query = { owner_id: req.userId };
@@ -563,7 +565,7 @@ router.get('/owner/stats', authMiddleware, async (req, res) => {
 });
 
 // Get applications for a specific listing (owner)
-router.get('/owner/listing/:listingId', authMiddleware, async (req, res) => {
+router.get('/owner/listing/:listingId', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { listingId } = req.params;
     const { status } = req.query;
@@ -602,7 +604,7 @@ router.get('/owner/listing/:listingId', authMiddleware, async (req, res) => {
 });
 
 // Update application status (owner)
-router.patch('/:id/status', authMiddleware, async (req, res) => {
+router.patch('/:id/status', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { status, notes } = req.body;
     const application = await RentalApplication.findById(req.params.id);
@@ -690,6 +692,7 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
         listing_id: listing._id
       }
     });
+    void sendApplicationStatusNotification(application.tenant_id, status, listing.title, application._id);
 
     res.json({
       msg: `Application ${status} successfully`,
@@ -702,7 +705,7 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
 });
 
 // Add review notes (owner)
-router.patch('/:id/review-notes', authMiddleware, async (req, res) => {
+router.patch('/:id/review-notes', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { review_notes } = req.body;
     const application = await RentalApplication.findById(req.params.id);
@@ -733,7 +736,7 @@ router.patch('/:id/review-notes', authMiddleware, async (req, res) => {
 // ============================================
 
 // Create a comparison
-router.post('/compare', authMiddleware, async (req, res) => {
+router.post('/compare', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const { listing_id, application_ids, name, notes } = req.body;
 
@@ -787,7 +790,7 @@ router.post('/compare', authMiddleware, async (req, res) => {
 });
 
 // Get all comparisons for owner
-router.get('/compare', authMiddleware, async (req, res) => {
+router.get('/compare', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const comparisons = await ApplicationComparison.find({
       owner_id: req.userId
@@ -804,7 +807,7 @@ router.get('/compare', authMiddleware, async (req, res) => {
 });
 
 // Get a specific comparison with full details
-router.get('/compare/:id', authMiddleware, async (req, res) => {
+router.get('/compare/:id', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const comparison = await ApplicationComparison.findOne({
       _id: req.params.id,
@@ -836,7 +839,7 @@ router.get('/compare/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete comparison
-router.delete('/compare/:id', authMiddleware, async (req, res) => {
+router.delete('/compare/:id', authMiddleware, requireOwner(), async (req, res) => {
   try {
     const comparison = await ApplicationComparison.findOne({
       _id: req.params.id,
@@ -857,7 +860,7 @@ router.delete('/compare/:id', authMiddleware, async (req, res) => {
 });
 
 // Get application details (owner or tenant)
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', authMiddleware, requireRole('tenant', 'owner'), async (req, res) => {
   try {
     const application = await RentalApplication.findById(req.params.id)
       .populate('tenant_id', 'name email phone currentLocation')

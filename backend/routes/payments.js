@@ -5,6 +5,7 @@ const axios = require('axios');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { sendPaymentConfirmationNotification } = require('../services/notificationService');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
@@ -81,7 +82,7 @@ const defaultSessionUrl = 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php';
 const legacySessionUrl = 'https://sandbox.sslcommerz.com/gwprocess/v4/process.php';
 
 // Initiate a payment session with SSLCOMMERZ
-router.post('/initiate', authMiddleware, async (req, res) => {
+router.post('/initiate', authMiddleware, requireTenant(), async (req, res) => {
   try {
     const { amount, purpose, bookingId, plan, tokens } = req.body;
     const numericAmount = Number(amount);
@@ -209,6 +210,16 @@ const handleSuccessCallback = async (req, res) => {
       payment.amount = Number(validationData?.amount || payment.amount || 0);
     }
     await payment.save();
+
+    if (isSuccessful && payment.user) {
+      void sendPaymentConfirmationNotification(
+        payment.user,
+        payment.amount,
+        payment.tran_id,
+        payment.bookingId || payment.purpose || 'ThikanaBD payment',
+        payment._id
+      );
+    }
 
     if (isSuccessful && payment.purpose === 'tokens' && payment.user) {
       try {
