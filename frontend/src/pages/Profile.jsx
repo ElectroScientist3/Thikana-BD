@@ -1,4 +1,6 @@
-﻿import { useEffect, useState } from "react";
+﻿// src/pages/Profile.jsx
+import { useEffect, useState } from "react";
+import { API_BASE } from "../config/api";
 
 const initialProfile = {
   name: "",
@@ -29,7 +31,7 @@ function Profile() {
       }
 
       try {
-        const res = await fetch("http://localhost:5000/api/auth/profile", {
+        const res = await fetch(`${API_BASE}/api/auth/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -95,7 +97,7 @@ function Profile() {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/profile", {
+      const res = await fetch(`${API_BASE}/api/auth/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
