@@ -1,5 +1,6 @@
 // src/components/ListingCard.jsx
 import StatusBadge from './StatusBadge';
+import VerificationBadge from './VerificationBadge';
 
 function ListingCard({ listing, onStatusChange, onViewHistory }) {
   const formatCurrency = (amount) => {
@@ -10,7 +11,7 @@ function ListingCard({ listing, onStatusChange, onViewHistory }) {
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden">
       <div className="p-4">
         <div className="flex items-start justify-between mb-2">
-          <h3 className="font-semibold text-slate-900 text-lg">{listing.title}</h3>
+          <div><h3 className="font-semibold text-slate-900 text-lg">{listing.title}</h3><VerificationBadge verified={listing.isVerified} badge={listing.verificationBadge} className="mt-1" /></div>
           <StatusBadge status={listing.status} />
         </div>
         

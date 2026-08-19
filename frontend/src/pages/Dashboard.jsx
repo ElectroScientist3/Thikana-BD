@@ -1,33 +1,42 @@
 // src/pages/Dashboard.jsx
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import NotificationBell from "../components/NotificationBell";
+import { useSocket } from "../context/SocketContext";
+import { getConversationUnreadCount } from "../services/conversationApi";
 
 function Dashboard() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const dropdownRef = useRef();
-  const notificationRef = useRef();
+  const { role, logout } = useAuth();
+  const { socket } = useSocket();
+  const [messageUnreadCount, setMessageUnreadCount] = useState(0);
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
-
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setNotificationsOpen(false);
-      }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const loadUnreadCount = () => getConversationUnreadCount().then((response) => setMessageUnreadCount(response.data.unreadCount || 0)).catch(() => {});
+    loadUnreadCount();
+    if (!socket) return undefined;
+    socket.on("conversation-updated", loadUnreadCount);
+    return () => socket.off("conversation-updated", loadUnreadCount);
+  }, [socket]);
+
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    logout();
     navigate("/login");
   };
 
@@ -68,6 +77,7 @@ function Dashboard() {
         </div>
 
         <button
+          style={{ display: role === "admin" ? "none" : undefined }}
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isDashboard ? "bg-blue-600 text-white" : "text-slate-200"
           }`}
@@ -78,36 +88,58 @@ function Dashboard() {
         </button>
 
         <button
+          style={{ display: role === "admin" ? "none" : undefined }}
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isProperties ? "bg-amber-500 text-slate-950" : "text-slate-200"
           }`}
-          onClick={() => navigate("/dashboard/properties")}
+          onClick={() => navigate(role === "owner" ? "/owner/add-property" : "/dashboard/properties")}
         >
           <span className="text-xl">🏘️</span>
-          {sidebarOpen && "Browse Properties"}
+          {sidebarOpen && (role === "owner" ? "Add Property" : "Search")}
         </button>
 
         <button
+          style={{ display: role === "owner" ? undefined : "none" }}
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isMyListings ? "bg-emerald-500 text-slate-950" : "text-slate-200"
           }`}
           onClick={() => navigate("/dashboard/my-listings")}
         >
           <span className="text-xl">📋</span>
-          {sidebarOpen && "My Listings"}
+          {sidebarOpen && "My Properties"}
         </button>
 
         <button
+          style={{ display: role === "admin" ? "none" : undefined }}
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isViewings ? "bg-blue-500 text-white" : "text-slate-200"
           }`}
           onClick={() => navigate("/dashboard/viewings")}
         >
           <span className="text-xl">👁️</span>
-          {sidebarOpen && "Viewings"}
+          {sidebarOpen && (role === "owner" ? "Viewing Requests" : "My Viewings")}
         </button>
 
         <button
+          style={{ display: role === "admin" ? "none" : undefined }}
+          className="flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors text-slate-200"
+          onClick={() => navigate(role === "owner" ? "/dashboard/owner-applications" : "/dashboard/applications")}
+        >
+          <span className="text-xl">📄</span>
+          {sidebarOpen && (role === "owner" ? "Applications" : "My Applications")}
+        </button>
+
+        <button
+          style={{ display: role === "owner" ? undefined : "none" }}
+          className="flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors text-slate-200"
+          onClick={() => navigate("/owner/verification")}
+        >
+          <span className="text-xl">✓</span>
+          {sidebarOpen && "Verification"}
+        </button>
+
+        <button
+          style={{ display: role === "tenant" ? undefined : "none" }}
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             location.pathname.endsWith("/rent-calculator") ? "bg-amber-500 text-slate-950" : "text-slate-200"
           }`}
@@ -118,6 +150,7 @@ function Dashboard() {
         </button>
 
         <button
+          style={{ display: role === "tenant" ? undefined : "none" }}
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isBookings ? "bg-indigo-500 text-white" : "text-slate-200"
           }`}
@@ -128,16 +161,19 @@ function Dashboard() {
         </button>
 
         <button
+          style={{ display: role === "admin" ? "none" : undefined }}
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isMessages ? "bg-pink-500 text-white" : "text-slate-200"
           }`}
-          onClick={() => navigate("/dashboard/messages")}
+          onClick={() => navigate("/messages")}
         >
           <span className="text-xl">💬</span>
-          {sidebarOpen && "Messages"}
+          {sidebarOpen && <span>Messages</span>}
+          {messageUnreadCount > 0 && <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">{messageUnreadCount > 99 ? "99+" : messageUnreadCount}</span>}
         </button>
 
         <button
+          style={{ display: role === "tenant" ? undefined : "none" }}
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isPayments ? "bg-emerald-500 text-slate-950" : "text-slate-200"
           }`}
@@ -148,6 +184,7 @@ function Dashboard() {
         </button>
 
         <button
+          style={{ display: role === "tenant" ? undefined : "none" }}
           className={`flex items-center gap-3 px-4 py-3 text-left text-base font-semibold hover:bg-slate-800 rounded-r-full mb-2 transition-colors ${
             isAgent ? "bg-cyan-500 text-slate-950" : "text-slate-200"
           }`}
@@ -187,39 +224,7 @@ function Dashboard() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Notifications */}
-            <div className="relative" ref={notificationRef}>
-              <button
-                onClick={() => setNotificationsOpen((open) => !open)}
-                className="w-11 h-11 rounded-full bg-slate-100 text-slate-700 text-xl shadow-sm hover:bg-slate-200 transition-colors relative"
-                title="Notifications"
-              >
-                🔔
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
-                  3
-                </span>
-              </button>
-
-              {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl z-[60] border border-slate-200 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 font-semibold text-slate-900">Notifications</div>
-                  <div className="p-3 space-y-2">
-                    <div className="rounded-xl bg-blue-50 px-3 py-2 text-sm text-slate-700">
-                      <div className="font-semibold text-blue-900">Property request</div>
-                      <div className="text-xs text-slate-500">A new renter requested a viewing for Skyline Residency.</div>
-                    </div>
-                    <div className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-slate-700">
-                      <div className="font-semibold text-amber-900">Payment pending</div>
-                      <div className="text-xs text-slate-500">One rent ledger item is still awaiting confirmation.</div>
-                    </div>
-                    <div className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-slate-700">
-                      <div className="font-semibold text-emerald-900">Message received</div>
-                      <div className="text-xs text-slate-500">The property owner replied with the latest viewing time.</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <NotificationBell />
 
             {/* Profile Dropdown */}
             <div className="relative" ref={dropdownRef}>

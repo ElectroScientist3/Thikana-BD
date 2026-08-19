@@ -5,6 +5,7 @@ import StatusChangeModal from '../components/StatusChangeModal';
 import StatusHistoryModal from '../components/StatusHistoryModal';
 import { useListings } from '../hooks/useListings';
 import { STATUS_OPTIONS } from '../utils/statusUtils';
+import VerificationBadge from '../components/VerificationBadge';
 
 function MyListings() {
   const { 
@@ -224,7 +225,7 @@ function MyListings() {
                         />
                       </td>
                     )}
-                    <td className="px-3 py-3 font-semibold text-slate-900">{listing.title}</td>
+                    <td className="px-3 py-3 font-semibold text-slate-900"><div>{listing.title}</div><VerificationBadge verified={listing.isVerified} badge={listing.verificationBadge} className="mt-1" /></td>
                     <td className="px-3 py-3">
                       {listing.area}, {listing.city}
                     </td>
@@ -250,6 +251,14 @@ function MyListings() {
                         >
                           Change Status
                         </button>
+                        {!listing.isVerified && (
+                          <button
+                            onClick={() => navigate(`/verify-property?propertyId=${listing._id}`)}
+                            className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs hover:bg-emerald-700 transition"
+                          >
+                            Get Verified
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

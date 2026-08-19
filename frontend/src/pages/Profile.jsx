@@ -1,6 +1,7 @@
 ﻿// src/pages/Profile.jsx
 import { useEffect, useState } from "react";
 import { API_BASE } from "../config/api";
+import TelegramLink from "../components/TelegramLink";
 
 const initialProfile = {
   name: "",
@@ -184,6 +185,7 @@ function Profile() {
             </div>
           ) : (
             <div className="space-y-8">
+              <TelegramLink />
               <section className="rounded-3xl border border-slate-200 bg-slate-50/80 p-6 shadow-sm">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>

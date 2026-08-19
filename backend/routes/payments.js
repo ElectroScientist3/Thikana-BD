@@ -5,6 +5,7 @@ const axios = require('axios');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { requireTenant } = require('../middleware/roleAuth');
 const { sendPaymentConfirmationNotification } = require('../services/notificationService');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });

@@ -6,6 +6,7 @@ import { useListings } from '../hooks/useListings';
 import { useApplications } from '../hooks/useApplications';
 import TenantApplicationForm from '../components/TenantApplicationForm';
 import ApplicationStatusBadge from '../components/ApplicationStatusBadge';
+import { useAuth } from '../context/AuthContext';
 
 const STATUS_COLORS = {
   'pending': 'bg-amber-100 text-amber-700 border-amber-200',
@@ -51,6 +52,7 @@ const PROPERTY_TYPE_LABELS = {
 
 function Viewings() {
   const navigate = useNavigate();
+  const { role } = useAuth();
   const { listings, loading: listingsLoading, fetchAllListings } = useListings();
   const {
     appointments,
@@ -79,7 +81,7 @@ function Viewings() {
     getApplicationByViewing
   } = useApplications();
 
-  const [userRole, setUserRole] = useState('tenant');
+  const [userRole, setUserRole] = useState(role || 'tenant');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showActionModal, setShowActionModal] = useState(false);
@@ -135,9 +137,8 @@ function Viewings() {
   }, [navigate]);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-    setUserRole('tenant');
-  }, []);
+    if (role) setUserRole(role);
+  }, [role]);
 
   // Load data when role or status changes
   useEffect(() => {
@@ -806,18 +807,6 @@ function Viewings() {
                 + Request Viewing
               </button>
             )}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setUserRole(userRole === 'owner' ? 'tenant' : 'owner');
-                  setSelectedStatus('');
-                  setApplicationStatusMap({});
-                }}
-                className="px-4 py-2 bg-white/20 rounded-xl text-white hover:bg-white/30 transition text-sm"
-              >
-                Switch to {userRole === 'owner' ? 'Tenant' : 'Owner'} View
-              </button>
-            </div>
           </div>
         </div>
 

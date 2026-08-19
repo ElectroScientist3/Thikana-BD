@@ -1,13 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../config/api";
+import { useAuth } from "../context/AuthContext";
 
 function Auth() {
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-  const [signupForm, setSignupForm] = useState({ name: "", email: "", password: "" });
+  const [signupForm, setSignupForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "",
+    businessName: "",
+    preferredContactMethod: "",
+  });
   const [loginLoading, setLoginLoading] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLoginChange = (e) => {
     setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
@@ -31,15 +40,13 @@ function Auth() {
 
     const data = await res.json();
     if (res.ok) {
-      localStorage.setItem("token", data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          name: data.user?.name || "User",
-          email: data.user?.email || loginForm.email,
-        })
-      );
-      navigate("/dashboard");
+      const user = login(data.token, {
+        id: data.user?.id,
+        name: data.user?.name || "User",
+        email: data.user?.email || loginForm.email,
+        role: data.user?.role,
+      });
+      navigate(`/${user.role || "dashboard"}/dashboard`);
     } else {
       alert(data.msg || "Login failed");
     }
@@ -61,7 +68,7 @@ function Auth() {
     if (res.ok) {
       alert("Signup successful! Please log in using the login form.");
       setLoginForm({ email: signupForm.email, password: "" });
-      setSignupForm({ name: "", email: "", password: "" });
+      setSignupForm({ name: "", email: "", password: "", role: "", businessName: "", preferredContactMethod: "" });
     } else {
       alert(data.msg || "Signup failed");
     }
@@ -111,6 +118,22 @@ function Auth() {
           <div className="border border-gray-200 rounded-3xl p-8 bg-gradient-to-br from-white via-slate-50 to-slate-100">
             <h2 className="text-2xl font-semibold mb-4">SIGN UP</h2>
             <form onSubmit={handleSignupSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {[
+                  { value: "tenant", icon: "🏠", label: "I'm looking for a home" },
+                  { value: "owner", icon: "🏢", label: "I own properties" },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setSignupForm({ ...signupForm, role: option.value })}
+                    className={`rounded-xl border p-4 text-left transition ${signupForm.role === option.value ? "border-blue-600 bg-blue-50 ring-2 ring-blue-200" : "border-gray-300 hover:border-blue-400"}`}
+                  >
+                    <span className="text-2xl">{option.icon}</span>
+                    <span className="mt-2 block text-sm font-semibold">{option.label}</span>
+                  </button>
+                ))}
+              </div>
               <input
                 name="name"
                 type="text"
@@ -120,6 +143,28 @@ function Auth() {
                 className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
                 required
               />
+              {signupForm.role === "owner" && (
+                <>
+                  <input
+                    name="businessName"
+                    type="text"
+                    placeholder="Business or property name (optional)"
+                    value={signupForm.businessName}
+                    onChange={handleSignupChange}
+                    className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
+                  />
+                  <select
+                    name="preferredContactMethod"
+                    value={signupForm.preferredContactMethod}
+                    onChange={handleSignupChange}
+                    className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="">Preferred contact method (optional)</option>
+                    <option value="phone">Phone</option>
+                    <option value="email">Email</option>
+                  </select>
+                </>
+              )}
               <input
                 name="email"
                 type="email"

@@ -1,5 +1,7 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import RoleRoute from "./components/RoleRoute";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import MapSearch from "./pages/MapSearch";
@@ -15,15 +17,27 @@ import Profile from "./pages/Profile";
 import Agent from "./pages/Agent";
 import Booking from "./pages/Booking";
 import Message from "./pages/Message";
+import MyApplications from "./pages/MyApplications";
+import ManageApplications from "./pages/ManageApplications";
+import TenantDashboard from "./pages/TenantDashboard";
+import OwnerDashboard from "./pages/OwnerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import NotificationHistory from "./pages/NotificationHistory";
+import Messages from "./pages/Messages";
+import ChatWindow from "./pages/ChatWindow";
+import VerifyProperty from "./pages/VerifyProperty";
+import VerificationReview from "./pages/admin/VerificationReview";
+import DuplicateListings from "./pages/admin/DuplicateListings";
+import FraudReports from "./pages/admin/FraudReports";
 
 function PrivateRoute() {
-  const token = localStorage.getItem("token");
+  const { token } = useAuth();
   return token ? <Outlet /> : <Navigate to="/login" />;
 }
 
 function PublicRoute({ children }) {
-  const token = localStorage.getItem("token");
-  return token ? <Navigate to="/dashboard" /> : children;
+  const { token, role } = useAuth();
+  return token ? <Navigate to={`/${role || "dashboard"}/dashboard`} /> : children;
 }
 
 function App() {
@@ -42,12 +56,34 @@ function App() {
           </PublicRoute>
         } />
         <Route path="/payment-result" element={<PaymentResult />} />
+        <Route element={<RoleRoute allowedRoles={["tenant"]} />}>
+          <Route path="/tenant/dashboard" element={<TenantDashboard />} />
+        </Route>
+        <Route element={<RoleRoute allowedRoles={["owner"]} />}>
+          <Route path="/owner/dashboard" element={<OwnerDashboard />} />
+          <Route path="/owner/add-property" element={<MapSearch />} />
+          <Route path="/owner/verification" element={<Profile />} />
+          <Route path="/verify-property" element={<VerifyProperty />} />
+        </Route>
+        <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminDashboard />} />
+          <Route path="/admin/verifications" element={<VerificationReview />} />
+          <Route path="/admin/fraud-reports" element={<FraudReports />} />
+          <Route path="/admin/duplicates" element={<DuplicateListings />} />
+        </Route>
         <Route element={<PrivateRoute />}>
+          <Route path="/notifications" element={<NotificationHistory />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/messages/:conversationId" element={<ChatWindow />} />
           <Route path="/dashboard" element={<Dashboard />}>
             <Route index element={<DashboardHome />} />
             <Route path="properties" element={<MapSearch />} />
-            <Route path="my-listings" element={<MyListings />} />
+            <Route path="my-listings" element={<RoleRoute allowedRoles={["owner"]}><MyListings /></RoleRoute>} />
             <Route path="viewings" element={<Viewings />} />
+            <Route path="applications" element={<RoleRoute allowedRoles={["tenant"]}><MyApplications /></RoleRoute>} />
+            <Route path="owner-applications" element={<RoleRoute allowedRoles={["owner"]}><ManageApplications /></RoleRoute>} />
+            <Route path="reviews" element={<RoleRoute allowedRoles={["tenant"]}><Profile /></RoleRoute>} />
             <Route path="recommendations" element={<Recommendations />} />
             <Route path="rent-calculator" element={<RentCalculator />} />
             <Route path="rent-ledger" element={<RentLedger />} />

@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useListings } from "../hooks/useListings";
+import { useAuth } from "../context/AuthContext";
+import { startConversation } from "../services/conversationApi";
+import VerificationBadge from "../components/VerificationBadge";
+import RatingChart from "../components/RatingChart";
+import ReviewForm from "../components/ReviewForm";
+import ReviewList from "../components/ReviewList";
+import FraudReportModal from "../components/FraudReportModal";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -21,6 +28,7 @@ const DEFAULT_ZOOM = 12;
 function MapSearch() {
   const navigate = useNavigate();
   const { listings, loading, fetchAllListings, createListing } = useListings();
+  const { isTenant } = useAuth();
   
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
@@ -53,6 +61,9 @@ function MapSearch() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createSuccess, setCreateSuccess] = useState(false);
+  const [startingConversation, setStartingConversation] = useState(false);
+  const [showFraudReport, setShowFraudReport] = useState(false);
+  const [reviewRefreshKey, setReviewRefreshKey] = useState(0);
 
   // Create property form state
   const [createForm, setCreateForm] = useState({
@@ -391,6 +402,20 @@ function MapSearch() {
     loadListings();
   };
 
+  const handleMessageOwner = async () => {
+    if (!selected?._id || startingConversation) return;
+    setStartingConversation(true);
+    setMapError("");
+    try {
+      const response = await startConversation(selected._id);
+      navigate(`/messages/${response.data.conversation._id}`);
+    } catch (error) {
+      setMapError(error.response?.data?.msg || "Unable to start conversation.");
+    } finally {
+      setStartingConversation(false);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-slate-100">
       {/* Sidebar - Fixed width, no overlap */}
@@ -572,6 +597,7 @@ function MapSearch() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <div className="font-semibold text-slate-900">{listing.title}</div>
+                        <VerificationBadge verified={listing.isVerified} badge={listing.verificationBadge} />
                         <span className={`text-xs px-2 py-0.5 rounded-full ${statusInfo.color}`}>
                           {statusInfo.label}
                         </span>
@@ -625,7 +651,7 @@ function MapSearch() {
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-[95%] max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-10">
             <div className="flex justify-between items-start">
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-slate-900">{selected.title}</h3>
+                <div className="flex flex-wrap items-center gap-2"><h3 className="text-xl font-semibold text-slate-900">{selected.title}</h3><VerificationBadge verified={selected.isVerified} badge={selected.verificationBadge} /></div>
                 <div className="text-sm text-gray-600 mb-2">{selected.area}, {selected.city}</div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   <div>
@@ -656,6 +682,16 @@ function MapSearch() {
                 >
                   Request Viewing
                 </button>
+                {isTenant() && (
+                  <button
+                    type="button"
+                    disabled={startingConversation}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={handleMessageOwner}
+                  >
+                    {startingConversation ? 'Opening...' : '💬 Message Owner'}
+                  </button>
+                )}
                 <button 
                   type="button" 
                   onClick={() => setSelected(null)} 
@@ -664,10 +700,18 @@ function MapSearch() {
                   Close
                 </button>
               </div>
+              <div className="mt-5 space-y-4 border-t border-slate-200 pt-5">
+                <RatingChart propertyId={selected._id} refreshKey={reviewRefreshKey} />
+                {isTenant() && <ReviewForm propertyId={selected._id} onSubmitted={() => setReviewRefreshKey((current) => current + 1)} />}
+                <ReviewList propertyId={selected._id} refreshKey={reviewRefreshKey} />
+                <button type="button" onClick={() => setShowFraudReport(true)} className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100">🚩 Report Listing</button>
+              </div>
             </div>
           </div>
         )}
       </div>
+
+      {showFraudReport && selected && <FraudReportModal propertyId={selected._id} propertyTitle={selected.title} onClose={() => setShowFraudReport(false)} />}
 
       {/* Create Property Modal */}
       {showCreateModal && (
